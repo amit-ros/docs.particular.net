@@ -129,7 +129,7 @@ class RoutingInfoSubscriber :
         publishers.AddOrReplacePublishers("AutomaticRouting", newPublisherMap.Select(
             x => new PublisherTableEntry(x.Key, PublisherAddress.CreateFromEndpointName(x.Value))).ToList());
 
-        endpointInstances.AddOrReplaceInstances("AutomaticRouting", newInstanceMap.SelectMany(x => x.Value).ToList());
+        endpointInstances.AddOrReplaceInstances("AutomaticRouting", newInstanceMap.SelectMany(x => x.Value).Where(IsActive).ToList());
         #endregion
 
         instanceMap = newInstanceMap;
@@ -141,6 +141,12 @@ class RoutingInfoSubscriber :
             await messageSession.Subscribe(type)
                 .ConfigureAwait(false);
         }
+    }
+
+    bool IsActive(EndpointInstance endpointInstance)
+    {
+        var info = instanceInformation[endpointInstance];
+        return info.State == InstanceState.Active;
     }
 
     static IEnumerable<Type> LogChangesToPublisherMap(Dictionary<Type, string> publisherMap, Dictionary<Type, string> newPublisherMap)
