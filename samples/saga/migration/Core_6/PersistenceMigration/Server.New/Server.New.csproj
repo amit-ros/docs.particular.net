@@ -56,8 +56,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Server\SomeSaga.cs">
-      <Link>SomeSaga.cs</Link>
+    <Compile Include="..\Server\TestSaga.cs">
+      <Link>TestSaga.cs</Link>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

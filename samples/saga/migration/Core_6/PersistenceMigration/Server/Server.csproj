@@ -63,7 +63,7 @@
     <Compile Include="DummyMessage.cs" />
     <Compile Include="NotFoundHandler.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="SomeSaga.cs" />
+    <Compile Include="TestSaga.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
