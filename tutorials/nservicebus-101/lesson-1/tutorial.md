@@ -14,12 +14,15 @@ By the end of this lesson, you will have learned:
  * What an endpoint is and how to create one
 
 
-## Prerequisites
+## What do I need to get started?
 
-There are a few things we need in order to build a solution with the latest version of NServiceBus.
+NServiceBus has very few prerequisites. It's very easy to get started.
 
-* This course uses Visual Studio 2015 and .NET Framework 4.6.1, although [NServiceBus only requires .NET Framework 4.5.2](/nservicebus/operations/dotnet-framework-version-requirements.md).
-* NServiceBus requires queuing infrastructure (a [transport](/nservicebus/transports/)) to move messages around. This course uses Microsoft Message Queuing (MSMQ). The [Particular Platform Installer](/platform/installer/) will install MSMQ and its dependencies for you. [Download and run the Platform Installer](/platform/installer/) to get started, or [follow these instructions to configure MSMQ manually](/nservicebus/msmq/#nservicebus-configuration).
+Although [NServiceBus only requires .NET Framework 4.5.2](/nservicebus/operations/dotnet-framework-version-requirements.md), this course uses Visual Studio 2015 and .NET Framework 4.6.1, which includes some useful async-related APIs.
+
+NServiceBus needs queuing infrastructure (a [transport](/nservicebus/transports/)) to move messages around. For this course we'll just use the [SQL Server Transport](/nservicebus/sqlserver/) since you probably already have access to a SQL database anyway. If not, you can download and install [SQL Server Express](http://downloadsqlserverexpress.com/) on your local machine.
+
+On your database server, create a database named **NServiceBusAcademy**, which we'll use throughout the exercises.
 
 
 
@@ -42,7 +45,13 @@ Next, we need to add the NServiceBus NuGet package as a dependency. From the [Nu
 Install-Package NServiceBus -ProjectName ClientUI
 ```
 
-This adds a reference to the NServiceBus.Core assembly to the project. With the proper dependencies in place, we're ready to start writing code.
+This adds a reference to the NServiceBus.Core assembly to the project. Next we'll add a reference to the package for the SQL Server Transport. Type the following into the same package manager console:
+
+```no-highlight
+Install-Package NServiceBus.SqlServer -ProjectName ClientUI
+```
+
+With the proper dependencies in place, we're ready to start writing code.
 
 
 ### Configure an endpoint
@@ -82,9 +91,11 @@ The `EndpointConfiguration` class is where we define all the settings that deter
 
 snippet:Transport
 
-This setting defines the [**transport**](/nservicebus/transports/) that NServiceBus will use to send and receive messages. `MsmqTransport` is the only transport available within the core library. All other transports require additional NuGet packages.
+This setting defines the [**transport**](/nservicebus/transports/) that NServiceBus will use to send and receive messages. We are using the `SqlServerTransport` from the **NServiceBus.SqlServer** NuGet package as it only has a dependency on SQL Server. Other transports require different NuGet packages.
 
-The [**MSMQ transport**](/nservicebus/msmq/) is the default setting, so we technically don't need this line at all. For now, it's good to make the choice of transport explicit within our code.
+snippet:ConnectionString
+
+This setting allows the transport to connect to our SQL Server instance. Note that the connection string shown assumes the use of SQL Server Express. You may need to change the connection string as appropriate to connect to your SQL Server instance.
 
 
 #### Serializer
@@ -131,12 +142,18 @@ When you run the endpoint for the first time, the endpoint will:
 
  * Display its logging information, which is written to a file as well as the console. NServiceBus also logs to multiple levels, so you can [change the log level](/nservicebus/logging/) from `INFO` to log level `DEBUG` in order to get more information.
  * Display the [status of your license](/nservicebus/licensing/).
+ * TODO: WARN  NServiceBus.Transport.SQLServer.SqlConnectionFactory Minimum and Maximum connection pooling values are not configured on the provided connection string.
  * Attempt to add the current user to the "Performance Monitor Users" group so that it can write [performance counters](/nservicebus/operations/performance-counters.md) to track its health and progress.
- * Warn you that the [queues it created have development-specific permissions that may not be required in production](/nservicebus/msmq/operations-scripting.md#create-queues-default-permissions). Creating the queues with additional permissions makes things easier during development, but in a production scenario these queues should be created with the minimum required privileges, and these warnings will serve as reminders to do that.
+
+ You should also take a look in your SQL database, where NServiceBus has created queues (as tables) for the **ClientUI** project as well as the **error** queue.
+
+ ![SQL Tables](sql-tables.png)
+
+ We'll explore how these work in more detail in the next lessons.
 
 
 ## Summary
 
-In this lesson we set up the prerequisites for NServiceBus and created a simple messaging endpoint to make sure it works. In the next lesson, we'll define a message, a message handler, and then send the message and watch it get processed.
+In this lesson we created a simple messaging endpoint to make sure it works. In the next lesson, we'll define a message, a message handler, and then send the message and watch it get processed.
 
 When you're ready, move on to [**Lesson 2: Sending a command**](../lesson-2/).
