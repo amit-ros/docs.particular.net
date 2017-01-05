@@ -49,6 +49,7 @@
     <Compile Include="ReplyFollowUpMessage.cs" />
     <Compile Include="ReplyMessage.cs" />
     <Compile Include="StartingMessage.cs" />
+    <Compile Include="TestTimeout.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -16,6 +16,7 @@ using NServiceBus;
 public class TestSaga : Saga<TestSaga.TestSagaData>,
     IHandleMessages<ReplyFollowUpMessage>,
     IHandleMessages<CorrelatedMessage>,
+    IHandleTimeouts<TestTimeout>,
 #if MIGRATION && !NEW
     IHandleMessages<StartingMessage>,
     IAmStartedByMessages<DummyMessage>
@@ -26,8 +27,6 @@ public class TestSaga : Saga<TestSaga.TestSagaData>,
 #endregion
 
 {
-    #region DummyHandler
-
 #if MIGRATION && !NEW
     public Task Handle(DummyMessage message, IMessageHandlerContext context)
     {
@@ -35,11 +34,9 @@ public class TestSaga : Saga<TestSaga.TestSagaData>,
     }
 #endif
 
-    #endregion
-
     protected override void ConfigureHowToFindSaga(SagaPropertyMapper<TestSagaData> mapper)
     {
-#region Mappings
+    #region Mappings
 
         mapper.ConfigureMapping<StartingMessage>(m => m.SomeId).ToSaga(s => s.SomeId);
         mapper.ConfigureMapping<CorrelatedMessage>(m => m.SomeId).ToSaga(s => s.SomeId);
@@ -47,10 +44,10 @@ public class TestSaga : Saga<TestSaga.TestSagaData>,
         mapper.ConfigureMapping<DummyMessage>(m => m.SomeId).ToSaga(s => s.SomeId);
 #endif
 
-#endregion
+    #endregion
     }
 
-#region Handlers
+    #region Handlers
     public Task Handle(StartingMessage message, IMessageHandlerContext context)
     {
         Console.WriteLine($"{Data.SomeId}: Created new saga instance.");
@@ -59,9 +56,8 @@ public class TestSaga : Saga<TestSaga.TestSagaData>,
 
     public Task Handle(ReplyFollowUpMessage message, IMessageHandlerContext context)
     {
-        Console.WriteLine($"{Data.SomeId}: Got a follow-up message. Completing.");
-        MarkAsComplete();
-        return Task.CompletedTask;
+        Console.WriteLine($"{Data.SomeId}: Got a follow-up message.");
+        return RequestTimeout<TestTimeout>(context, DateTime.UtcNow.AddSeconds(10));
     }
 
     public Task Handle(CorrelatedMessage message, IMessageHandlerContext context)
@@ -72,7 +68,15 @@ public class TestSaga : Saga<TestSaga.TestSagaData>,
             SomeId = Data.SomeId
         });
     }
-#endregion
+
+    public Task Timeout(TestTimeout state, IMessageHandlerContext context)
+    {
+        Console.WriteLine($"{Data.SomeId}: Got timeout. Completing.");
+        MarkAsComplete();
+        return Task.CompletedTask;
+    }
+
+    #endregion
 
     public class TestSagaData : ContainSagaData
     {
